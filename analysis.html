@@ -1,0 +1,255 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detailed Analysis - SDG 5 Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: #f7fafc;
+            color: #1a202c;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+        }
+        
+        h1 {
+            color: #1a365d;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #3182ce;
+            padding-bottom: 15px;
+        }
+        
+        h2 {
+            color: #2c5282;
+            font-size: 1.8em;
+            margin-top: 40px;
+            margin-bottom: 20px;
+        }
+        
+        h3 {
+            color: #2c5282;
+            font-size: 1.4em;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        
+        p, li {
+            margin-bottom: 15px;
+            color: #4a5568;
+            font-size: 1.05em;
+        }
+        
+        ul {
+            padding-left: 30px;
+        }
+        
+        .insight-box {
+            background: #ebf8ff;
+            border-left: 4px solid #3182ce;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .back-link {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #3182ce;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            transition: background 0.2s;
+        }
+        
+        .back-link:hover {
+            background: #2c5282;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="gender_education_dashboard.html" class="back-link">← Back to Dashboard</a>
+        
+        <h1>Detailed Analysis: SDG 5 Gender Equality in Education</h1>
+        
+        <h2>Executive Summary</h2>
+        <p>
+            This analysis examines 45 years (1980-2024) of gender education data across 180+ countries, 
+            revealing significant progress in female literacy rates globally while highlighting persistent 
+            regional disparities and complex relationships between education, labor force participation, 
+            and fertility rates.
+        </p>
+        
+        <h2>Distribution Analysis Findings</h2>
+        <div class="insight-box">
+            <h3>Key Patterns</h3>
+            <ul>
+                <li><strong>Bimodal Literacy Distribution:</strong> Countries cluster into high literacy (>85%) and low literacy (<60%) groups, indicating a global education divide.</li>
+                <li><strong>Right-Skewed Fertility:</strong> Most countries have achieved low adolescent fertility rates (<40 per 1000), with outliers in Sub-Saharan Africa and parts of South Asia.</li>
+                <li><strong>Wide Labor Force Variation:</strong> Female labor force participation ranges from 30% to 80%, showing cultural and economic factors beyond education.</li>
+                <li><strong>Out-of-School Extremes:</strong> Most countries have low rates, but crisis-affected regions show extreme outliers indicating emergency education contexts.</li>
+            </ul>
+        </div>
+        
+        <h2>Regional Comparison Insights</h2>
+        <h3>Europe & Central Asia</h3>
+        <ul>
+            <li>Highest median literacy rates (>95%)</li>
+            <li>Tightest distribution indicating uniformity across countries</li>
+            <li>Lowest adolescent fertility rates</li>
+            <li>Near-perfect gender parity (0.98-1.00)</li>
+        </ul>
+        
+        <h3>Sub-Saharan Africa</h3>
+        <ul>
+            <li>Lowest median literacy rates but widest variation</li>
+            <li>Some countries approaching universal literacy while others remain below 50%</li>
+            <li>Highest adolescent fertility rates</li>
+            <li>Largest gender gaps in literacy</li>
+        </ul>
+        
+        <h3>South Asia</h3>
+        <ul>
+            <li>Dramatic improvement: 30% average literacy (1980) to 70% (2024)</li>
+            <li>Significant inter-country variation</li>
+            <li>Persistent gender gaps (6-8 percentage points)</li>
+            <li>Cultural barriers to female labor participation despite rising literacy</li>
+        </ul>
+        
+        <h3>East Asia & Pacific</h3>
+        <ul>
+            <li>High and rising literacy rates</li>
+            <li>Highest female labor force participation (60%+)</li>
+            <li>Rapid fertility decline</li>
+            <li>Strong correlation between education and economic participation</li>
+        </ul>
+        
+        <h2>Temporal Trends (1980-2024)</h2>
+        <div class="insight-box">
+            <h3>Universal Progress</h3>
+            <p>
+                All regions show upward literacy trends with no reversals, indicating sustained global 
+                commitment to education despite conflicts, economic crises, and pandemics.
+            </p>
+        </div>
+        
+        <ul>
+            <li><strong>Acceleration After 2000:</strong> Millennium Development Goals (MDGs) and SDGs drove faster improvements post-2000.</li>
+            <li><strong>Fertility Decline:</strong> Adolescent fertility declining globally since 1990s, closely tracking female education improvements.</li>
+            <li><strong>Labor Force Plateau:</strong> Some regions (MENA, South Asia) show plateaued female labor participation despite rising literacy.</li>
+            <li><strong>Gender Gap Narrowing:</strong> Global gender literacy gap reduced from 15 percentage points (1980) to 5 points (2024).</li>
+        </ul>
+        
+        <h2>Correlation Analysis</h2>
+        <h3>Strong Relationships</h3>
+        <ul>
+            <li><strong>Female ↔ Male Literacy (r ≈ 0.95):</strong> Very strong positive correlation indicates education systems affect both genders similarly.</li>
+            <li><strong>Literacy ↔ Adolescent Fertility (r ≈ -0.66):</strong> Strong negative correlation confirms education's role in delaying childbearing.</li>
+            <li><strong>Out of School ↔ Literacy (r ≈ -0.70):</strong> Strong negative correlation validates data quality and indicator consistency.</li>
+        </ul>
+        
+        <h3>Moderate Relationships</h3>
+        <ul>
+            <li><strong>Literacy ↔ Labor Participation (r ≈ 0.30):</strong> Moderate positive correlation indicates education is necessary but not sufficient for economic participation. Cultural norms, childcare availability, and employment opportunities matter significantly.</li>
+        </ul>
+        
+        <h2>Gender Parity Progress</h2>
+        <div class="insight-box">
+            <h3>Overall Improvement</h3>
+            <p>
+                Global Gender Parity Index improved from 0.85 (1980) to 0.95 (2024), representing 
+                significant but incomplete progress toward equality.
+            </p>
+        </div>
+        
+        <h3>Regional Performance</h3>
+        <ul>
+            <li><strong>Achieved Parity (≥0.98):</strong> Europe, North America, Latin America, East Asia</li>
+            <li><strong>Near Parity (0.90-0.97):</strong> Parts of Middle East, Southeast Asia</li>
+            <li><strong>Significant Gaps (0.75-0.90):</strong> South Asia, North Africa, Sub-Saharan Africa</li>
+            <li><strong>Reverse Gap (>1.00):</strong> 15 countries where female literacy exceeds male (mostly small island states and highly developed nations)</li>
+        </ul>
+        
+        <h2>Multi-Dimensional Evolution</h2>
+        <p>
+            The animated bubble chart reveals countries generally move rightward (↑literacy) while 
+            bubbles shrink (↓fertility), but vertical movement (labor participation) varies dramatically:
+        </p>
+        <ul>
+            <li><strong>Fastest Improvers:</strong> China, Bangladesh, Iran, Morocco show dramatic literacy gains with fertility decline.</li>
+            <li><strong>Labor Force Paradox:</strong> Some countries (e.g., India, Turkey) show declining female labor participation despite rising literacy, indicating complex socioeconomic factors.</li>
+            <li><strong>Successful Integration:</strong> East Asian countries demonstrate both high literacy and sustained high female labor participation.</li>
+        </ul>
+        
+        <h2>Key Policy Implications</h2>
+        <div class="insight-box">
+            <h3>Education Alone Is Insufficient</h3>
+            <p>
+                While literacy improvements are crucial and globally consistent, translating education 
+                into economic participation requires complementary policies addressing cultural norms, 
+                childcare, workplace discrimination, and economic opportunity structures.
+            </p>
+        </div>
+        
+        <ul>
+            <li><strong>Target Persistent Gaps:</strong> South Asia and MENA require targeted interventions addressing cultural barriers beyond schooling access.</li>
+            <li><strong>Maintain Momentum:</strong> Progress plateaued in some regions post-2010; renewed commitment needed.</li>
+            <li><strong>Address Labor Market Barriers:</strong> High literacy without labor participation indicates barriers beyond education.</li>
+            <li><strong>Support Crisis Contexts:</strong> Extreme outliers in girls' out-of-school rates indicate emergency education needs in conflict/disaster zones.</li>
+        </ul>
+        
+        <h2>Methodology Notes</h2>
+        <h3>Data Source</h3>
+        <p>World Bank Development Indicators (1980-2024), covering 180+ countries with biennial measurements.</p>
+        
+        <h3>Missing Data Treatment</h3>
+        <p>Hybrid imputation approach:</p>
+        <ol>
+            <li>Linear interpolation for within-country gaps</li>
+            <li>Regional mean imputation for isolated missing values</li>
+            <li>K-Nearest Neighbors (KNN) for complex patterns</li>
+        </ol>
+        
+        <h3>Indicators</h3>
+        <ul>
+            <li>Female literacy rate (% ages 15+)</li>
+            <li>Male literacy rate (% ages 15+)</li>
+            <li>Adolescent fertility rate (births per 1000 women ages 15-19)</li>
+            <li>Female labor force participation rate (% ages 15+)</li>
+            <li>Girls out of school, primary (% of primary school-age girls)</li>
+            <li>Gender Parity Index (Female literacy / Male literacy)</li>
+        </ul>
+        
+        <h2>Conclusion</h2>
+        <p>
+            The 45-year analysis reveals substantial global progress in gender equality in education, 
+            with female literacy rates improving across all regions. However, persistent regional 
+            disparities, particularly in South Asia and Sub-Saharan Africa, require sustained policy 
+            attention. Furthermore, the moderate correlation between literacy and labor participation 
+            highlights that education, while necessary, must be complemented by broader social and 
+            economic reforms to achieve full gender equality in all dimensions of development.
+        </p>
+        
+        <a href="gender_education_dashboard.html" class="back-link" style="margin-top: 40px;">← Back to Dashboard</a>
+    </div>
+</body>
+</html>

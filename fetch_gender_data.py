@@ -13,7 +13,7 @@ indicators = {
     'SL.TLF.TOTL.FE.ZS': 'Female_Labor_Force_Participation' # The Economic Impact
 }
 
-# Time range
+# Time range for data extraction
 start_year = 1980
 end_year = datetime.datetime.now().year
 
