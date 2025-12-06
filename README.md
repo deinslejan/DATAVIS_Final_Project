@@ -2,7 +2,7 @@
 
 ## 📊 Project Overview
 
-This project analyzes gender equality indicators related to education access, with a focus on **SDG 5 (Gender Equality)** using World Bank Development Indicators data from 2000-2023.
+This project analyzes gender equality indicators related to education access, with a focus on **SDG 5 (Gender Equality)** using World Bank Development Indicators data from 1980-2023.
 
 ### Research Question
 **How does access to primary education for girls correlate with female literacy rates, adolescent fertility rates, and female labor force participation across different countries and time periods?**
@@ -103,6 +103,33 @@ The analysis is structured as a **4-notebook pipeline** for clarity and modulari
 ---
 
 ## 🔍 Key Findings
+
+### ✅ Research Question Answered
+
+**Q: How does access to primary education for girls correlate with female literacy rates, adolescent fertility rates, and female labor force participation across different countries and time periods?**
+
+**A: Strong correlations found with clear policy implications:**
+
+#### 1. Education Access → Literacy (Strong Positive, r ≈ 0.85)
+- **Direct relationship**: Countries with fewer girls out of school have higher female literacy rates
+- **Temporal pattern**: 1980-2024 data shows literacy improvements lag behind enrollment by 10-15 years
+- **Regional variation**: Sub-Saharan Africa shows strongest improvement trajectory (2000-2024)
+
+#### 2. Education Access → Adolescent Fertility (Strong Negative, r = -0.66)
+- **Inverse relationship**: Better education access = lower adolescent fertility
+- **Threshold effect**: Countries with >90% female literacy: <30 births/1,000
+- **Crisis indicator**: Countries with <50% female literacy: >100 births/1,000
+- **Mechanism**: Education delays marriage, increases reproductive autonomy
+
+#### 3. Education Access → Labor Force Participation (Moderate Positive, r ≈ 0.30)
+- **Complex relationship**: NOT strictly correlated with literacy
+- **Cultural factors dominate**: Some high-literacy regions have low participation (MENA)
+- **Economic context matters**: Labor market opportunities, childcare, cultural norms
+- **Policy insight**: Education is necessary but not sufficient for economic empowerment
+
+---
+
+### Additional Key Findings
 
 ### 1. Strong Inverse Relationship: Education ↔ Fertility
 - **Correlation: r = -0.66** (strong negative)
