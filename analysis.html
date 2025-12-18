@@ -93,7 +93,7 @@
         
         <h2>Executive Summary</h2>
         <p>
-            This analysis examines 45 years (1980-2024) of gender education data across 180+ countries, 
+            This analysis examines 45 years (1980-2024) of gender education data across 221 individual countries, 
             revealing significant progress in female literacy rates globally while highlighting persistent 
             regional disparities and complex relationships between education, labor force participation, 
             and fertility rates.
@@ -122,16 +122,19 @@
         <h3>Sub-Saharan Africa</h3>
         <ul>
             <li>Lowest median literacy rates but widest variation</li>
+            <li>Progress from 44.9% (1980) to 60.3% (2024) female literacy</li>
             <li>Some countries approaching universal literacy while others remain below 50%</li>
-            <li>Highest adolescent fertility rates</li>
-            <li>Largest gender gaps in literacy</li>
+            <li>Highest adolescent fertility rates: declining from 147.7 to 91.1 births per 1,000</li>
+            <li>Largest gender gaps with Gender Parity Index at 0.78</li>
+            <li>Dual crisis of low education access and high adolescent fertility</li>
         </ul>
         
         <h3>South Asia</h3>
         <ul>
-            <li>Dramatic improvement: 30% average literacy (1980) to 70% (2024)</li>
+            <li>Dramatic improvement: 40.3% average literacy (1980) to 66.6% (2024)</li>
             <li>Significant inter-country variation</li>
-            <li>Persistent gender gaps (6-8 percentage points)</li>
+            <li>Adolescent fertility rate declined from 132.1 to 36.2 births per 1,000</li>
+            <li>Persistent gender gaps with Gender Parity Index at 0.81</li>
             <li>Cultural barriers to female labor participation despite rising literacy</li>
         </ul>
         
@@ -156,7 +159,7 @@
             <li><strong>Acceleration After 2000:</strong> Millennium Development Goals (MDGs) and SDGs drove faster improvements post-2000.</li>
             <li><strong>Fertility Decline:</strong> Adolescent fertility declining globally since 1990s, closely tracking female education improvements.</li>
             <li><strong>Labor Force Plateau:</strong> Some regions (MENA, South Asia) show plateaued female labor participation despite rising literacy.</li>
-            <li><strong>Gender Gap Narrowing:</strong> Global gender literacy gap reduced from 15 percentage points (1980) to 5 points (2024).</li>
+            <li><strong>Gender Gap Narrowing:</strong> Global Gender Parity Index improved by 10.6% over 45 years (0.827 to 0.915).</li>
         </ul>
         
         <h2>Correlation Analysis</h2>
@@ -176,7 +179,7 @@
         <div class="insight-box">
             <h3>Overall Improvement</h3>
             <p>
-                Global Gender Parity Index improved from 0.85 (1980) to 0.95 (2024), representing 
+                Global Gender Parity Index improved from 0.827 (1980) to 0.915 (2024), representing 
                 significant but incomplete progress toward equality.
             </p>
         </div>
@@ -219,14 +222,17 @@
         
         <h2>Methodology Notes</h2>
         <h3>Data Source</h3>
-        <p>World Bank Development Indicators (1980-2024), covering 180+ countries with biennial measurements.</p>
+        <p>World Bank Development Indicators (1980-2024), covering 221 individual countries across 7 world regions with annual measurements.</p>
+        
+        <h3>Data Filtering</h3>
+        <p>Removed 40+ aggregate statistical regions (e.g., "World", "Sub-Saharan Africa", "High income") to prevent double-counting. Retained all individual countries regardless of size, from microstates like Monaco to large nations like China, ensuring comprehensive global coverage.</p>
         
         <h3>Missing Data Treatment</h3>
-        <p>Hybrid imputation approach:</p>
+        <p>Hybrid imputation strategy achieving 90.7% data coverage:</p>
         <ol>
-            <li>Linear interpolation for within-country gaps</li>
-            <li>Regional mean imputation for isolated missing values</li>
-            <li>K-Nearest Neighbors (KNN) for complex patterns</li>
+            <li><strong>Linear Interpolation (reduced missingness by 35%):</strong> Filled temporal gaps within each country's timeline using linear interpolation (limit=10 years, requiring ≥2 data points per country)</li>
+            <li><strong>Regional Mean Substitution (reduced by 18%):</strong> Filled gaps using regional-year averages from neighboring countries in the same region</li>
+            <li><strong>K-Nearest Neighbors (reduced by 7%):</strong> Used machine learning (n_neighbors=5, distance-weighted) to estimate remaining values based on similar country profiles</li>
         </ol>
         
         <h3>Indicators</h3>
@@ -241,12 +247,13 @@
         
         <h2>Conclusion</h2>
         <p>
-            The 45-year analysis reveals substantial global progress in gender equality in education, 
-            with female literacy rates improving across all regions. However, persistent regional 
-            disparities, particularly in South Asia and Sub-Saharan Africa, require sustained policy 
-            attention. Furthermore, the moderate correlation between literacy and labor participation 
-            highlights that education, while necessary, must be complemented by broader social and 
-            economic reforms to achieve full gender equality in all dimensions of development.
+            The 45-year analysis of 221 countries reveals substantial global progress in gender equality in education, 
+            with the global Gender Parity Index improving from 0.827 to 0.915 and female literacy rates rising across 
+            all regions. However, persistent regional disparities remain critical challenges. Sub-Saharan Africa faces 
+            a dual crisis with the lowest Gender Parity Index (0.78) and highest adolescent fertility rate (91.1), while 
+            South Asia shows a paradox of improving literacy (40.3% to 66.6%) yet low Gender Parity Index (0.81). The 
+            moderate correlation between literacy and labor participation highlights that education, while necessary, must 
+            be complemented by broader social and economic reforms to achieve full gender equality in all dimensions of development.
         </p>
         
         <a href="gender_education_dashboard.html" class="back-link" style="margin-top: 40px;">← Back to Dashboard</a>

@@ -4,200 +4,112 @@ This script creates a standalone HTML file with all interactive visualizations
 """
 
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
+import base64
+import os
+import json
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-import plotly.io as pio
-import base64
-from io import BytesIO
 import warnings
 warnings.filterwarnings('ignore')
 
-# Set matplotlib style for EDA charts
-sns.set_style('whitegrid')
-plt.rcParams['figure.figsize'] = (14, 8)
-plt.rcParams['font.size'] = 11
+print("Loading data and figure files...")
 
-print("Loading data...")
+# Load the cleaned dataset
 df = pd.read_csv('gender_education_cleaned.csv')
-
 latest_year = df['year'].max()
 latest_data = df[df['year'] == latest_year].copy()
 
-print("Creating visualizations...")
+# Helper function to convert image file to base64
+def img_to_base64(filepath):
+    """Convert image file to base64 string"""
+    try:
+        with open(filepath, 'rb') as f:
+            img_base64 = base64.b64encode(f.read()).decode('utf-8')
+        return img_base64
+    except FileNotFoundError:
+        print(f"Warning: {filepath} not found")
+        return None
 
-# Helper function to convert matplotlib figure to base64
-def fig_to_base64(fig):
-    buf = BytesIO()
-    fig.savefig(buf, format='png', dpi=150, bbox_inches='tight')
-    buf.seek(0)
-    img_base64 = base64.b64encode(buf.read()).decode('utf-8')
-    plt.close(fig)
-    return img_base64
+# Helper function to read HTML file
+def read_html_file(filepath):
+    """Read HTML file content"""
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            return f.read()
+    except FileNotFoundError:
+        print(f"Warning: {filepath} not found")
+        return ""
 
 # ============================================================================
-# EDA STATIC VISUALIZATIONS (from Notebook 3)
+# LOAD EXISTING FIGURES FROM NOTEBOOKS
 # ============================================================================
 
-print("Generating EDA static charts...")
+print("Loading existing figures from notebooks...")
 
-# EDA 1: Distribution Histograms (6 separate charts)
+# EDA 1: Distribution Histograms (6 figures from Notebook 3)
 eda_distributions = []
-indicator_cols = [
-    'Girls_Out_Of_School_Primary',
-    'Literacy_Rate_Female',
-    'Literacy_Rate_Male',
-    'Adolescent_Fertility_Rate',
-    'Female_Labor_Force_Participation'
+distribution_files = [
+    'figures/figure1a_histogram_literacy-rate-female.png',
+    'figures/figure1b_histogram_literacy-rate-male.png',
+    'figures/figure1c_histogram_adolescent-fertility-rate.png',
+    'figures/figure1d_histogram_female-labor-force-participation.png',
+    'figures/figure1e_histogram_girls-out-of-school-primary.png',
+    'figures/figure1f_histogram_literacy-gap.png'
 ]
+for filepath in distribution_files:
+    img_base64 = img_to_base64(filepath)
+    if img_base64:
+        eda_distributions.append(img_base64)
 
-indicators_to_plot = [
-    ('Literacy_Rate_Female', 'Female Literacy Rate (%)', 'skyblue'),
-    ('Literacy_Rate_Male', 'Male Literacy Rate (%)', 'lightcoral'),
-    ('Adolescent_Fertility_Rate', 'Adolescent Fertility Rate (births per 1000 women 15-19)', 'lightgreen'),
-    ('Female_Labor_Force_Participation', 'Female Labor Force Participation (%)', 'gold'),
-    ('Girls_Out_Of_School_Primary', 'Girls Out of School (Primary Level)', 'plum'),
-    ('Literacy_Gap', 'Literacy Gap (Male - Female %)', 'salmon')
-]
-
-for col, title, color in indicators_to_plot:
-    if col in df.columns:
-        fig, ax = plt.subplots(figsize=(12, 6))
-        data = df[col].dropna()
-        
-        ax.hist(data, bins=40, color=color, edgecolor='black', alpha=0.7)
-        ax.set_title(title, fontsize=14, fontweight='bold', pad=20)
-        ax.set_xlabel('Value', fontsize=11)
-        ax.set_ylabel('Frequency', fontsize=11)
-        ax.grid(axis='y', alpha=0.3)
-        
-        mean_val = data.mean()
-        median_val = data.median()
-        ax.axvline(mean_val, color='red', linestyle='--', linewidth=2, label=f'Mean: {mean_val:.1f}')
-        ax.axvline(median_val, color='blue', linestyle='--', linewidth=2, label=f'Median: {median_val:.1f}')
-        ax.legend(fontsize=10)
-        
-        eda_distributions.append(fig_to_base64(fig))
-
-# EDA 2: Regional Box Plots (4 separate charts)
+# EDA 2: Regional Box Plots (4 figures from Notebook 3)
 eda_boxplots = []
-key_indicators = [
-    ('Literacy_Rate_Female', 'Female Literacy Rate (%)'),
-    ('Adolescent_Fertility_Rate', 'Adolescent Fertility Rate'),
-    ('Female_Labor_Force_Participation', 'Female Labor Force Participation (%)'),
-    ('Literacy_Gap', 'Literacy Gap (Male - Female %)')
+boxplot_files = [
+    'figures/figure2a_boxplot_literacy-rate-female.png',
+    'figures/figure2b_boxplot_adolescent-fertility-rate.png',
+    'figures/figure2c_boxplot_female-labor-force-participation.png',
+    'figures/figure2d_boxplot_literacy-gap.png'
 ]
+for filepath in boxplot_files:
+    img_base64 = img_to_base64(filepath)
+    if img_base64:
+        eda_boxplots.append(img_base64)
 
-for col, title in key_indicators:
-    if col in df.columns:
-        fig, ax = plt.subplots(figsize=(14, 7))
-        df_plot = df[df[col].notna() & df['region'].notna()]
-        sns.boxplot(data=df_plot, x='region', y=col, ax=ax, palette='Set2')
-        
-        ax.set_title(f'{title} by World Region', fontsize=14, fontweight='bold', pad=20)
-        ax.set_xlabel('Region', fontsize=12, fontweight='bold')
-        ax.set_ylabel(title, fontsize=12, fontweight='bold')
-        ax.tick_params(axis='x', rotation=45, labelsize=10)
-        ax.grid(axis='y', alpha=0.3)
-        
-        eda_boxplots.append(fig_to_base64(fig))
-
-# EDA 3: Temporal Trends (4 separate charts)
+# EDA 3: Temporal Trends (3 figures from Notebook 3)
 eda_trends = []
-yearly_trends = df.groupby(['year', 'region'])[indicator_cols].mean().reset_index()
-
-trend_indicators = [
-    ('Literacy_Rate_Female', 'Female Literacy Rate Over Time', '%'),
-    ('Adolescent_Fertility_Rate', 'Adolescent Fertility Rate Over Time', 'Births per 1000'),
-    ('Female_Labor_Force_Participation', 'Female Labor Force Participation Over Time', '%'),
-    ('Literacy_Gap', 'Gender Literacy Gap Over Time', '% (M - F)')
+trend_files = [
+    'figures/figure3a_timeseries_literacy-rate-female.png',
+    'figures/figure3b_timeseries_adolescent-fertility-rate.png',
+    'figures/figure3c_timeseries_female-labor-force-participation.png'
 ]
+for filepath in trend_files:
+    img_base64 = img_to_base64(filepath)
+    if img_base64:
+        eda_trends.append(img_base64)
 
-for col, title, ylabel in trend_indicators:
-    if col in yearly_trends.columns:
-        fig, ax = plt.subplots(figsize=(14, 7))
-        
-        for region in yearly_trends['region'].dropna().unique():
-            region_data = yearly_trends[yearly_trends['region'] == region]
-            ax.plot(region_data['year'], region_data[col], marker='o', 
-                   linewidth=2, markersize=4, label=region, alpha=0.8)
-        
-        ax.set_title(title, fontsize=14, fontweight='bold', pad=20)
-        ax.set_xlabel('Year', fontsize=12, fontweight='bold')
-        ax.set_ylabel(ylabel, fontsize=12, fontweight='bold')
-        ax.legend(loc='best', fontsize=10, framealpha=0.9)
-        ax.grid(True, alpha=0.3)
-        
-        eda_trends.append(fig_to_base64(fig))
+# EDA 4: Correlation Heatmap (1 figure from Notebook 3)
+eda_correlation = img_to_base64('figures/figure4_correlation_heatmap.png')
 
-# EDA 4: Correlation Heatmap
-numeric_cols = [
-    'Literacy_Rate_Female', 'Literacy_Rate_Male', 'Literacy_Gap',
-    'Adolescent_Fertility_Rate', 'Female_Labor_Force_Participation',
-    'Girls_Out_Of_School_Primary'
-]
+# EDA 5: Gender Parity Analysis (2 figures from Notebook 3)
+eda_parity_regional = img_to_base64('figures/figure5a_gender_parity_regional.png')
+eda_parity_temporal = img_to_base64('figures/figure5b_gender_parity_temporal.png')
 
-corr_data = df[numeric_cols].dropna()
-correlation_matrix = corr_data.corr()
-
-fig, ax = plt.subplots(figsize=(12, 10))
-sns.heatmap(correlation_matrix, annot=True, fmt='.2f', cmap='coolwarm', 
-            center=0, square=True, linewidths=1, cbar_kws={'shrink': 0.8},
-            vmin=-1, vmax=1, ax=ax)
-ax.set_title('Correlation Matrix: Gender Education Indicators', fontsize=14, fontweight='bold', pad=20)
-eda_correlation = fig_to_base64(fig)
-
-# EDA 5: Gender Parity Analysis
-if 'Literacy_Gender_Parity_Index' in df.columns:
-    fig, axes = plt.subplots(1, 2, figsize=(16, 6))
-    
-    region_parity = df.groupby('region')['Literacy_Gender_Parity_Index'].mean().sort_values()
-    colors = ['red' if x < 0.95 else 'orange' if x < 0.98 else 'green' for x in region_parity.values]
-    
-    axes[0].barh(range(len(region_parity)), region_parity.values, color=colors, alpha=0.7, edgecolor='black')
-    axes[0].set_yticks(range(len(region_parity)))
-    axes[0].set_yticklabels(region_parity.index, fontsize=10)
-    axes[0].axvline(1.0, color='blue', linestyle='--', linewidth=2, label='Perfect Parity')
-    axes[0].set_xlabel('Gender Parity Index', fontsize=11, fontweight='bold')
-    axes[0].set_title('Average Literacy Gender Parity by Region', fontsize=12, fontweight='bold')
-    axes[0].legend()
-    axes[0].grid(axis='x', alpha=0.3)
-    
-    yearly_parity = df.groupby('year')['Literacy_Gender_Parity_Index'].mean()
-    axes[1].plot(yearly_parity.index, yearly_parity.values, linewidth=3, color='purple', marker='o')
-    axes[1].axhline(1.0, color='blue', linestyle='--', linewidth=2, label='Perfect Parity')
-    axes[1].fill_between(yearly_parity.index, 0.95, 1.0, alpha=0.2, color='orange', label='Near Parity')
-    axes[1].set_xlabel('Year', fontsize=11, fontweight='bold')
-    axes[1].set_ylabel('Gender Parity Index', fontsize=11, fontweight='bold')
-    axes[1].set_title('Global Literacy Gender Parity Trend (1980-2024)', fontsize=12, fontweight='bold')
-    axes[1].legend()
-    axes[1].grid(True, alpha=0.3)
-    
-    eda_parity = fig_to_base64(fig)
-else:
-    eda_parity = None
-
-print(f"✓ Generated {len(eda_distributions)} distribution charts")
-print(f"✓ Generated {len(eda_boxplots)} box plots")
-print(f"✓ Generated {len(eda_trends)} trend charts")
-print(f"✓ Generated correlation heatmap")
-print(f"✓ Generated gender parity analysis")
+print(f"✓ Loaded {len(eda_distributions)} distribution charts")
+print(f"✓ Loaded {len(eda_boxplots)} box plots")
+print(f"✓ Loaded {len(eda_trends)} trend charts")
+print(f"✓ Loaded correlation heatmap")
+print(f"✓ Loaded gender parity analysis")
 
 # ============================================================================
-# INTERACTIVE PLOTLY VISUALIZATIONS (from Notebook 4)
+# LOAD INTERACTIVE PLOTLY VISUALIZATIONS (from Notebook 4)
 # ============================================================================
 
-print("Generating interactive Plotly charts...")
+print("Generating interactive Plotly charts from data...")
 
-# ============================================================================
-# 1. Time Series: Regional Trends
-# ============================================================================
+# 1. Regional Literacy Trends
 regional_trends = df.groupby(['year', 'region'])['Literacy_Rate_Female'].mean().reset_index()
 
-fig1 = px.line(
+fig_trends = px.line(
     regional_trends,
     x='year',
     y='Literacy_Rate_Female',
@@ -212,17 +124,15 @@ fig1 = px.line(
     template='plotly_white',
     height=600
 )
-fig1.update_traces(line=dict(width=3), marker=dict(size=6))
-fig1.update_layout(
+fig_trends.update_traces(line=dict(width=3), marker=dict(size=6))
+fig_trends.update_layout(
     title_font_size=18,
     title_x=0.5,
     legend=dict(orientation='v', yanchor='middle', y=0.5, xanchor='left', x=1.02),
     hovermode='x unified'
 )
 
-# ============================================================================
-# 2. Animated Choropleth Map
-# ============================================================================
+# 2. Choropleth Map
 iso_mapping = {
     'United States': 'USA', 'United Kingdom': 'GBR', 'China': 'CHN', 'India': 'IND',
     'Brazil': 'BRA', 'Germany': 'DEU', 'France': 'FRA', 'Japan': 'JPN', 'Italy': 'ITA',
@@ -239,38 +149,39 @@ iso_mapping = {
     'Ghana': 'GHA', 'Angola': 'AGO', 'Mozambique': 'MOZ', 'Madagascar': 'MDG', 'Cameroon': 'CMR',
     'Niger': 'NER', 'Mali': 'MLI', 'Burkina Faso': 'BFA', 'Malawi': 'MWI', 'Zambia': 'ZMB',
     'Senegal': 'SEN', 'Chad': 'TCD', 'Zimbabwe': 'ZWE', 'Rwanda': 'RWA', 'Benin': 'BEN',
-    'Tunisia': 'TUN', 'Cuba': 'CUB', 'Dominican Republic': 'DOM',
-    'Guatemala': 'GTM', 'Ecuador': 'ECU', 'Bolivia': 'BOL', 'Haiti': 'HTI', 'Honduras': 'HND',
-    'Paraguay': 'PRY', 'Nicaragua': 'NIC', 'El Salvador': 'SLV', 'Costa Rica': 'CRI',
-    'Panama': 'PAN', 'Uruguay': 'URY', 'Lebanon': 'LBN', 'Jordan': 'JOR', 'Libya': 'LBY',
-    'Yemen, Rep.': 'YEM', 'Afghanistan': 'AFG', 'Nepal': 'NPL', 'Sri Lanka': 'LKA',
-    'Myanmar': 'MMR', 'Cambodia': 'KHM', 'Lao PDR': 'LAO', 'Mongolia': 'MNG',
-    'Kazakhstan': 'KAZ', 'Uzbekistan': 'UZB', 'Azerbaijan': 'AZE', 'Georgia': 'GEO',
-    'Armenia': 'ARM', 'Albania': 'ALB', 'Croatia': 'HRV', 'Serbia': 'SRB', 'Bulgaria': 'BGR',
-    'Slovakia': 'SVK', 'Lithuania': 'LTU', 'Slovenia': 'SVN', 'Latvia': 'LVA', 'Estonia': 'EST',
-    'Hungary': 'HUN', 'Belarus': 'BLR', 'Bosnia and Herzegovina': 'BIH', 'North Macedonia': 'MKD',
-    'Moldova': 'MDA', 'Luxembourg': 'LUX', 'Iceland': 'ISL', 'Jamaica': 'JAM',
-    'Trinidad and Tobago': 'TTO', 'Bahamas, The': 'BHS', 'Barbados': 'BRB', 'Mauritius': 'MUS',
-    'Botswana': 'BWA', 'Namibia': 'NAM', 'Gabon': 'GAB', 'Lesotho': 'LSO', 'Gambia, The': 'GMB',
-    'Guinea': 'GIN', 'Togo': 'TGO', 'Sierra Leone': 'SLE', 'Liberia': 'LBR',
-    'Central African Republic': 'CAF', 'Congo, Rep.': 'COG', 'Congo, Dem. Rep.': 'COD',
-    'Burundi': 'BDI', 'Somalia': 'SOM', 'Djibouti': 'DJI', 'Comoros': 'COM',
-    'Equatorial Guinea': 'GNQ', 'Guinea-Bissau': 'GNB', 'Eritrea': 'ERI', 'South Sudan': 'SSD',
-    'Russian Federation': 'RUS', 'Turkiye': 'TUR', 'Iran, Islamic Rep.': 'IRN', 'Iraq': 'IRQ',
-    'Syrian Arab Republic': 'SYR', 'Oman': 'OMN', 'Kuwait': 'KWT', 'Qatar': 'QAT',
-    'United Arab Emirates': 'ARE', 'Bahrain': 'BHR', 'Cyprus': 'CYP', 'Bhutan': 'BTN',
-    'Maldives': 'MDV', 'Brunei Darussalam': 'BRN', 'Timor-Leste': 'TLS', 'Fiji': 'FJI',
-    'Papua New Guinea': 'PNG', 'Solomon Islands': 'SLB', 'Vanuatu': 'VUT', 'Samoa': 'WSM',
-    'Mauritania': 'MRT', 'Eswatini': 'SWZ', 'Guyana': 'GUY', 'Suriname': 'SUR', 'Belize': 'BLZ',
-    'Cape Verde': 'CPV', 'Seychelles': 'SYC', 'Sao Tome and Principe': 'STP',
-    'Kyrgyz Republic': 'KGZ', 'Tajikistan': 'TJK', 'Turkmenistan': 'TKM', 'Montenegro': 'MNE',
-    'Kosovo': 'XKX'
+    'Tunisia': 'TUN', 'Cuba': 'CUB', 'Dominican Republic': 'DOM', 'Guatemala': 'GTM',
+    'Ecuador': 'ECU', 'Bolivia': 'BOL', 'Haiti': 'HTI', 'Honduras': 'HND', 'Paraguay': 'PRY',
+    'Nicaragua': 'NIC', 'El Salvador': 'SLV', 'Costa Rica': 'CRI', 'Panama': 'PAN',
+    'Uruguay': 'URY', 'Lebanon': 'LBN', 'Jordan': 'JOR', 'Libya': 'LBY', 'Yemen, Rep.': 'YEM',
+    'Afghanistan': 'AFG', 'Nepal': 'NPL', 'Sri Lanka': 'LKA', 'Myanmar': 'MMR',
+    'Cambodia': 'KHM', 'Lao PDR': 'LAO', 'Mongolia': 'MNG', 'Kazakhstan': 'KAZ',
+    'Uzbekistan': 'UZB', 'Azerbaijan': 'AZE', 'Georgia': 'GEO', 'Armenia': 'ARM',
+    'Albania': 'ALB', 'Croatia': 'HRV', 'Serbia': 'SRB', 'Bulgaria': 'BGR',
+    'Slovakia': 'SVK', 'Lithuania': 'LTU', 'Slovenia': 'SVN', 'Latvia': 'LVA',
+    'Estonia': 'EST', 'Hungary': 'HUN', 'Belarus': 'BLR', 'Bosnia and Herzegovina': 'BIH',
+    'North Macedonia': 'MKD', 'Moldova': 'MDA', 'Luxembourg': 'LUX', 'Iceland': 'ISL',
+    'Jamaica': 'JAM', 'Trinidad and Tobago': 'TTO', 'Bahamas, The': 'BHS', 'Barbados': 'BRB',
+    'Mauritius': 'MUS', 'Botswana': 'BWA', 'Namibia': 'NAM', 'Gabon': 'GAB',
+    'Lesotho': 'LSO', 'Gambia, The': 'GMB', 'Guinea': 'GIN', 'Togo': 'TGO',
+    'Sierra Leone': 'SLE', 'Liberia': 'LBR', 'Central African Republic': 'CAF',
+    'Congo, Rep.': 'COG', 'Congo, Dem. Rep.': 'COD', 'Burundi': 'BDI', 'Somalia': 'SOM',
+    'Djibouti': 'DJI', 'Comoros': 'COM', 'Equatorial Guinea': 'GNQ', 'Guinea-Bissau': 'GNB',
+    'Eritrea': 'ERI', 'South Sudan': 'SSD', 'Russian Federation': 'RUS', 'Turkiye': 'TUR',
+    'Iran, Islamic Rep.': 'IRN', 'Iraq': 'IRQ', 'Syrian Arab Republic': 'SYR',
+    'Oman': 'OMN', 'Kuwait': 'KWT', 'Qatar': 'QAT', 'United Arab Emirates': 'ARE',
+    'Bahrain': 'BHR', 'Cyprus': 'CYP', 'Bhutan': 'BTN', 'Maldives': 'MDV',
+    'Brunei Darussalam': 'BRN', 'Timor-Leste': 'TLS', 'Fiji': 'FJI',
+    'Papua New Guinea': 'PNG', 'Solomon Islands': 'SLB', 'Vanuatu': 'VUT',
+    'Samoa': 'WSM', 'Mauritania': 'MRT', 'Eswatini': 'SWZ', 'Guyana': 'GUY',
+    'Suriname': 'SUR', 'Belize': 'BLZ', 'Cape Verde': 'CPV', 'Seychelles': 'SYC',
+    'Sao Tome and Principe': 'STP', 'Kyrgyz Republic': 'KGZ', 'Tajikistan': 'TJK',
+    'Turkmenistan': 'TKM', 'Montenegro': 'MNE', 'Kosovo': 'XKX'
 }
 
 df['iso_alpha'] = df['country'].map(iso_mapping)
 map_data = df[df['iso_alpha'].notna() & (df['year'] % 2 == 0)].copy()
 
-fig2 = px.choropleth(
+fig_map = px.choropleth(
     map_data,
     locations='iso_alpha',
     color='Literacy_Rate_Female',
@@ -289,16 +200,14 @@ fig2 = px.choropleth(
     template='plotly_white',
     height=600
 )
-fig2.update_layout(
+fig_map.update_layout(
     title_font_size=18,
     title_x=0.5,
     geo=dict(showframe=False, showcoastlines=True, projection_type='natural earth')
 )
 
-# ============================================================================
-# 3. Scatter Plot: Literacy vs. Labor Force
-# ============================================================================
-fig3 = px.scatter(
+# 3. Scatter Plot
+fig_scatter = px.scatter(
     latest_data,
     x='Literacy_Rate_Female',
     y='Female_Labor_Force_Participation',
@@ -321,16 +230,14 @@ fig3 = px.scatter(
     template='plotly_white',
     height=700
 )
-fig3.update_traces(marker=dict(line=dict(width=1, color='DarkSlateGrey')))
-fig3.update_layout(
+fig_scatter.update_traces(marker=dict(line=dict(width=1, color='DarkSlateGrey')))
+fig_scatter.update_layout(
     title_font_size=18,
     title_x=0.5,
     legend=dict(orientation='v', yanchor='top', y=1, xanchor='left', x=1.02)
 )
 
-# ============================================================================
-# 4. Multi-Panel Dashboard
-# ============================================================================
+# 4. Regional Dashboard
 regional_summary = latest_data.groupby('region').agg({
     'Literacy_Rate_Female': 'mean',
     'Adolescent_Fertility_Rate': 'mean',
@@ -339,7 +246,7 @@ regional_summary = latest_data.groupby('region').agg({
 }).reset_index()
 regional_summary = regional_summary.sort_values('Literacy_Rate_Female', ascending=True)
 
-fig4 = make_subplots(
+fig_dashboard = make_subplots(
     rows=2, cols=2,
     subplot_titles=(
         'Female Literacy Rate (%)',
@@ -353,38 +260,36 @@ fig4 = make_subplots(
     horizontal_spacing=0.15
 )
 
-fig4.add_trace(go.Bar(y=regional_summary['region'], x=regional_summary['Literacy_Rate_Female'],
+fig_dashboard.add_trace(go.Bar(y=regional_summary['region'], x=regional_summary['Literacy_Rate_Female'],
     orientation='h', marker=dict(color='skyblue', line=dict(color='navy', width=1)),
     text=regional_summary['Literacy_Rate_Female'].round(1), textposition='auto'), row=1, col=1)
 
-fig4.add_trace(go.Bar(y=regional_summary['region'], x=regional_summary['Adolescent_Fertility_Rate'],
+fig_dashboard.add_trace(go.Bar(y=regional_summary['region'], x=regional_summary['Adolescent_Fertility_Rate'],
     orientation='h', marker=dict(color='lightcoral', line=dict(color='darkred', width=1)),
     text=regional_summary['Adolescent_Fertility_Rate'].round(1), textposition='auto'), row=1, col=2)
 
-fig4.add_trace(go.Bar(y=regional_summary['region'], x=regional_summary['Female_Labor_Force_Participation'],
+fig_dashboard.add_trace(go.Bar(y=regional_summary['region'], x=regional_summary['Female_Labor_Force_Participation'],
     orientation='h', marker=dict(color='lightgreen', line=dict(color='darkgreen', width=1)),
     text=regional_summary['Female_Labor_Force_Participation'].round(1), textposition='auto'), row=2, col=1)
 
-fig4.add_trace(go.Bar(y=regional_summary['region'], x=regional_summary['Literacy_Gap'],
+fig_dashboard.add_trace(go.Bar(y=regional_summary['region'], x=regional_summary['Literacy_Gap'],
     orientation='h', marker=dict(color='plum', line=dict(color='purple', width=1)),
     text=regional_summary['Literacy_Gap'].round(1), textposition='auto'), row=2, col=2)
 
-fig4.update_layout(
+fig_dashboard.update_layout(
     title_text=f"Regional Gender Education Dashboard ({latest_year})",
     title_font_size=20, title_x=0.5, showlegend=False, height=900, template='plotly_white',
     margin=dict(l=200, r=100, t=120, b=80)
 )
-fig4.update_xaxes(title_text='%', row=1, col=1)
-fig4.update_xaxes(title_text='Births per 1000', row=1, col=2)
-fig4.update_xaxes(title_text='%', row=2, col=1)
-fig4.update_xaxes(title_text='% Points', row=2, col=2)
+fig_dashboard.update_xaxes(title_text='%', row=1, col=1)
+fig_dashboard.update_xaxes(title_text='Births per 1000', row=1, col=2)
+fig_dashboard.update_xaxes(title_text='%', row=2, col=1)
+fig_dashboard.update_xaxes(title_text='% Points', row=2, col=2)
 
-# ============================================================================
 # 5. Animated Bubble Chart
-# ============================================================================
 bubble_data = df[df['year'] % 3 == 0].copy()
 
-fig5 = px.scatter(
+fig_bubble = px.scatter(
     bubble_data,
     x='Literacy_Rate_Female',
     y='Female_Labor_Force_Participation',
@@ -406,51 +311,147 @@ fig5 = px.scatter(
     template='plotly_white',
     height=700
 )
-fig5.update_traces(marker=dict(line=dict(width=1.5, color='DarkSlateGrey')), selector=dict(mode='markers'))
-fig5.update_layout(
+fig_bubble.update_traces(marker=dict(line=dict(width=1.5, color='DarkSlateGrey')), selector=dict(mode='markers'))
+fig_bubble.update_layout(
     title_font_size=18,
     title_x=0.5,
     legend=dict(orientation='v', yanchor='top', y=1, xanchor='left', x=1.02)
 )
 
-# ============================================================================
-# 6. Gender Parity Box Plot
-# ============================================================================
-if 'Literacy_Gender_Parity_Index' in df.columns:
-    recent_data = df[df['year'] >= 2010].copy()
-    
-    fig6 = px.box(
-        recent_data,
-        x='region',
-        y='Literacy_Gender_Parity_Index',
-        color='region',
-        title='Gender Parity Index Distribution by Region (2010-2024)',
-        labels={
-            'region': 'World Region',
-            'Literacy_Gender_Parity_Index': 'Gender Parity Index (F/M ratio)'
-        },
-        template='plotly_white',
-        height=600,
-        points='outliers'
+# 6. Gender Parity Box Plot (Full Timeline: 1980-2024)
+fig_parity = px.box(
+    df,
+    x='region',
+    y='Literacy_Gender_Parity_Index',
+    color='region',
+    title='Gender Parity Index Distribution by Region (1980-2024)',
+    labels={
+        'region': 'World Region',
+        'Literacy_Gender_Parity_Index': 'Gender Parity Index (F/M ratio)'
+    },
+    template='plotly_white',
+    height=600,
+    points='outliers'
+)
+fig_parity.add_hline(y=1.0, line_dash='dash', line_color='red', 
+               annotation_text='Perfect Parity (1.0)', annotation_position='right')
+fig_parity.update_layout(title_font_size=18, title_x=0.5, showlegend=False, xaxis_tickangle=-45)
+
+# 6b. Interactive Adolescent Fertility Rate Temporal Trends
+fertility_trends = df.groupby(['year', 'region'])['Adolescent_Fertility_Rate'].mean().reset_index()
+
+fig_fertility_trends = px.line(
+    fertility_trends,
+    x='year',
+    y='Adolescent_Fertility_Rate',
+    color='region',
+    title='Adolescent Fertility Rate Evolution by Region (1980-2024)',
+    labels={
+        'year': 'Year',
+        'Adolescent_Fertility_Rate': 'Adolescent Fertility Rate (births per 1000 women 15-19)',
+        'region': 'World Region'
+    },
+    markers=True,
+    template='plotly_white',
+    height=600
+)
+fig_fertility_trends.update_traces(line=dict(width=3), marker=dict(size=6))
+fig_fertility_trends.update_layout(
+    title_font_size=18,
+    title_x=0.5,
+    legend=dict(orientation='v', yanchor='middle', y=0.5, xanchor='left', x=1.02),
+    hovermode='x unified'
+)
+
+# 7. Parallel Coordinates
+latest_sample = latest_data[['country', 'region', 'Literacy_Rate_Female', 'Literacy_Rate_Male', 
+                              'Adolescent_Fertility_Rate', 'Female_Labor_Force_Participation',
+                              'Literacy_Gap']].dropna().copy()
+
+# Add a text column for hover display
+latest_sample['hover_text'] = latest_sample['country'] + ' (' + latest_sample['region'] + ')'
+
+# Create parallel coordinates with country hover
+fig_parallel = go.Figure(data=
+    go.Parcoords(
+        line=dict(
+            color=latest_sample['Literacy_Rate_Female'],
+            colorscale='RdYlGn',
+            showscale=True,
+            cmin=0,
+            cmax=100,
+            colorbar=dict(title='Female<br>Literacy (%)')
+        ),
+        dimensions=[
+            dict(range=[0, 100],
+                 label='Female Literacy (%)',
+                 values=latest_sample['Literacy_Rate_Female']),
+            dict(range=[0, 100],
+                 label='Male Literacy (%)',
+                 values=latest_sample['Literacy_Rate_Male']),
+            dict(range=[0, 250],
+                 label='Adolescent Fertility',
+                 values=latest_sample['Adolescent_Fertility_Rate']),
+            dict(range=[0, 100],
+                 label='Female Labor (%)',
+                 values=latest_sample['Female_Labor_Force_Participation']),
+            dict(range=[-20, 70],
+                 label='Literacy Gap (%)',
+                 values=latest_sample['Literacy_Gap'])
+        ],
+        # Add hover labels using the name property
+        name='Countries'
     )
-    fig6.add_hline(y=1.0, line_dash='dash', line_color='red', 
-                   annotation_text='Perfect Parity (1.0)', annotation_position='right')
-    fig6.update_layout(title_font_size=18, title_x=0.5, showlegend=False, xaxis_tickangle=-45)
-else:
-    fig6 = None
+)
+
+# Add annotations for better hover experience
+fig_parallel.update_layout(
+    title=f'Multi-Dimensional Gender Education Analysis ({latest_year})<br><sub>Drag axes to filter data ranges | Each line represents one country</sub>',
+    title_font_size=18,
+    title_x=0.5,
+    height=600,
+    template='plotly_white',
+    font=dict(size=11)
+)
+
+# Note: Parallel coordinates has limited hover support in Plotly
+# Users can select ranges on axes to filter and see the data
+
+# 8. Sunburst Chart
+sunburst_data = latest_data.groupby(['region', 'country'])['Literacy_Rate_Female'].mean().reset_index()
+# Show all countries instead of just top 100
+sunburst_data = sunburst_data.sort_values('Literacy_Rate_Female', ascending=False)
+
+fig_sunburst = px.sunburst(
+    sunburst_data,
+    path=['region', 'country'],
+    values='Literacy_Rate_Female',
+    color='Literacy_Rate_Female',
+    color_continuous_scale='RdYlGn',
+    title=f'Hierarchical Female Literacy Analysis by Region ({latest_year})',
+    height=700
+)
+fig_sunburst.update_layout(title_font_size=18, title_x=0.5)
+
+# Convert to HTML
+plotly_chart_trends = fig_trends.to_html(include_plotlyjs='cdn', div_id='chart_trends', full_html=False)
+plotly_chart_fertility_trends = fig_fertility_trends.to_html(include_plotlyjs='cdn', div_id='chart_fertility_trends', full_html=False)
+plotly_chart_map = fig_map.to_html(include_plotlyjs='cdn', div_id='chart_map', full_html=False)
+plotly_chart_scatter = fig_scatter.to_html(include_plotlyjs='cdn', div_id='chart_scatter', full_html=False)
+plotly_chart_dashboard = fig_dashboard.to_html(include_plotlyjs='cdn', div_id='chart_dashboard', full_html=False)
+plotly_chart_bubble = fig_bubble.to_html(include_plotlyjs='cdn', div_id='chart_bubble', full_html=False)
+plotly_chart_parity = fig_parity.to_html(include_plotlyjs='cdn', div_id='chart_parity', full_html=False)
+plotly_chart_parallel = fig_parallel.to_html(include_plotlyjs='cdn', div_id='chart_parallel', full_html=False)
+plotly_chart_sunburst = fig_sunburst.to_html(include_plotlyjs='cdn', div_id='chart_sunburst', full_html=False)
+
+print(f"✓ Generated all interactive Plotly visualizations")
+
+
 
 # ============================================================================
 # Generate HTML Dashboard
 # ============================================================================
 print("Generating HTML dashboard...")
-
-# Convert Plotly figures to HTML divs (include CDN with each chart)
-plotly_chart1 = fig1.to_html(include_plotlyjs='cdn', div_id='chart1', full_html=False)
-plotly_chart2 = fig2.to_html(include_plotlyjs='cdn', div_id='chart2', full_html=False)
-plotly_chart3 = fig3.to_html(include_plotlyjs='cdn', div_id='chart3', full_html=False)
-plotly_chart4 = fig4.to_html(include_plotlyjs='cdn', div_id='chart4', full_html=False)
-plotly_chart5 = fig5.to_html(include_plotlyjs='cdn', div_id='chart5', full_html=False)
-plotly_chart6 = fig6.to_html(include_plotlyjs='cdn', div_id='chart6', full_html=False) if fig6 else ""
 
 html_content = """
 <!DOCTYPE html>
@@ -781,21 +782,24 @@ html_content = """
         </div>
         <div class="sidebar-nav">
             <div class="nav-section">
-                <div class="section-label">EDA Analysis</div>
-                <a href="#eda-dist">Distribution Analysis</a>
-                <a href="#eda-regional">Regional Comparisons</a>
-                <a href="#eda-trends">Temporal Trends</a>
-                <a href="#eda-corr">Correlation Analysis</a>
-                <a href="#eda-parity">Gender Parity</a>
+                <div class="section-label">Presentation Graphs</div>
+                <a href="#pres-correlation">1. Correlation Matrix</a>
+                <a href="#pres-parity">2. Gender Parity Index</a>
+                <a href="#pres-literacy-trends">3. Female Literacy Evolution</a>
+                <a href="#pres-fertility-trends">4. Adolescent Fertility Evolution</a>
+                <a href="#pres-map">5. Global Literacy Map</a>
+                <a href="#pres-scatter">6. Literacy vs Labor Force</a>
             </div>
             <div class="nav-section">
-                <div class="section-label">Interactive Charts</div>
-                <a href="#plotly-trends">Regional Literacy Trends</a>
-                <a href="#plotly-map">Global Literacy Map</a>
-                <a href="#plotly-scatter">Literacy vs. Labor Force</a>
-                <a href="#plotly-dashboard">Regional Dashboard</a>
-                <a href="#plotly-bubble">Multi-Dimensional Evolution</a>
-                <a href="#plotly-parity">Gender Parity Analysis</a>
+                <div class="section-label">Additional Analysis</div>
+                <a href="#add-distributions">Distribution Analysis</a>
+                <a href="#add-regional">Regional Comparisons</a>
+                <a href="#add-temporal">Temporal Trends</a>
+                <a href="#add-regional-parity">Regional Gender Parity</a>
+                <a href="#add-dashboard">Regional Dashboard</a>
+                <a href="#add-bubble">Multi-Dimensional Evolution</a>
+                <a href="#add-parallel">Parallel Coordinates</a>
+                <a href="#add-sunburst">Hierarchical Analysis</a>
             </div>
             <div class="nav-section">
                 <div class="section-label">Resources</div>
@@ -831,8 +835,98 @@ html_content = """
             </div>
         </div>
         
-        <!-- EDA SECTION: DISTRIBUTIONS -->
-        <section id="eda-dist" class="section">
+        <!-- ========================================== -->
+        <!-- PRESENTATION GRAPHS (FOR PRESENTATION)     -->
+        <!-- ========================================== -->
+        
+        <div style="background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%); color: white; padding: 30px; border-radius: 12px; margin: 40px 0 30px 0; text-align: center;">
+            <h1 style="font-size: 2em; margin: 0; font-weight: 700;">Presentation Graphs</h1>
+            <p style="margin: 10px 0 0 0; opacity: 0.95; font-size: 1.1em;">Key visualizations for presentation</p>
+        </div>
+        
+        <!-- 1. CORRELATION MATRIX -->
+        <section id="pres-correlation" class="section">
+            <h2 class="section-title">1. Correlation Matrix</h2>
+            <p class="section-description">
+                Heatmap showing correlations between all gender education indicators. Strong negative correlation between literacy and adolescent fertility (-0.66) confirms education's role in delaying childbearing.
+            </p>
+            <div class="chart-container">
+                <img src="data:image/png;base64,""" + eda_correlation + """">
+            </div>
+        </section>
+        
+        <!-- 2. GENDER PARITY INDEX -->
+        <section id="pres-parity" class="section">
+            <h2 class="section-title">2. Gender Parity Index Distribution (1980-2024)</h2>
+            <p class="section-description">
+                Interactive box plot showing the distribution of Gender Parity Index by region across the <strong>full 45-year timeline (1980-2024)</strong>. 
+                A value of 1.0 represents perfect gender parity. The chart shows how gender gaps have narrowed over time across all regions.
+            </p>
+            <div class="chart-container">
+                """ + plotly_chart_parity + """
+            </div>
+        </section>
+        
+        <!-- 3. FEMALE LITERACY RATE EVOLUTION -->
+        <section id="pres-literacy-trends" class="section">
+            <h2 class="section-title">3. Female Literacy Rate Evolution by Region</h2>
+            <p class="section-description">
+                Interactive line chart tracking female literacy rates across world regions from 1980 to 2024. 
+                <strong>Hover over lines</strong> to see exact values, <strong>click legend</strong> to show/hide regions.
+            </p>
+            <div class="chart-container">
+                """ + plotly_chart_trends + """
+            </div>
+        </section>
+        
+        <!-- 4. ADOLESCENT FERTILITY RATE EVOLUTION -->
+        <section id="pres-fertility-trends" class="section">
+            <h2 class="section-title">4. Adolescent Fertility Rate Evolution by Region</h2>
+            <p class="section-description">
+                Interactive line chart showing how adolescent fertility rates have declined globally from 1980 to 2024. 
+                This decline closely tracks female education improvements, demonstrating the strong link between education and delayed childbearing.
+            </p>
+            <div class="chart-container">
+                """ + plotly_chart_fertility_trends + """
+            </div>
+        </section>
+        
+        <!-- 5. GLOBAL LITERACY MAP -->
+        <section id="pres-map" class="section">
+            <h2 class="section-title">5. Global Female Literacy Map</h2>
+            <p class="section-description">
+                Animated choropleth map showing worldwide changes in female literacy rates over time. 
+                <strong>Click the play button</strong> to animate through years, hover over countries for details.
+            </p>
+            <div class="chart-container">
+                """ + plotly_chart_map + """
+            </div>
+        </section>
+        
+        <!-- 6. LITERACY VS LABOR FORCE -->
+        <section id="pres-scatter" class="section">
+            <h2 class="section-title">6. Female Literacy vs. Labor Force Participation</h2>
+            <p class="section-description">
+                Interactive scatter plot showing the relationship between female literacy and labor force participation rates (current year snapshot). 
+                Bubble size represents adolescent fertility rate. <strong>Note:</strong> This shows a single point in time, while the "Education & Employment Evolution" 
+                shows how countries moved across these dimensions over 45 years through animation.
+            </p>
+            <div class="chart-container">
+                """ + plotly_chart_scatter + """
+            </div>
+        </section>
+        
+        <!-- ========================================== -->
+        <!-- ADDITIONAL GRAPHS (SUPPLEMENTARY ANALYSIS) -->
+        <!-- ========================================== -->
+        
+        <div style="background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%); color: white; padding: 30px; border-radius: 12px; margin: 60px 0 30px 0; text-align: center;">
+            <h1 style="font-size: 2em; margin: 0; font-weight: 700;">Additional Analysis</h1>
+            <p style="margin: 10px 0 0 0; opacity: 0.95; font-size: 1.1em;">Supplementary visualizations and deeper insights</p>
+        </div>
+        
+        <!-- DISTRIBUTION ANALYSIS -->
+        <section id="add-distributions" class="section">
             <h2 class="section-title">Distribution Analysis</h2>
             <p class="section-description">
                 Histograms showing the distribution of each indicator across all countries.
@@ -843,8 +937,8 @@ html_content = """
             """ for img in eda_distributions]) + """
         </section>
         
-        <!-- EDA SECTION: REGIONAL BOX PLOTS -->
-        <section id="eda-regional" class="section">
+        <!-- REGIONAL BOX PLOTS -->
+        <section id="add-regional" class="section">
             <h2 class="section-title">Regional Comparisons</h2>
             <p class="section-description">
                 Box plots comparing indicator distributions across world regions.
@@ -855,11 +949,11 @@ html_content = """
             """ for img in eda_boxplots]) + """
         </section>
         
-        <!-- EDA SECTION: TEMPORAL TRENDS -->
-        <section id="eda-trends" class="section">
-            <h2 class="section-title">Temporal Trends (1980-2024)</h2>
+        <!-- TEMPORAL TRENDS (STATIC) -->
+        <section id="add-temporal" class="section">
+            <h2 class="section-title">Temporal Trends (Static Version)</h2>
             <p class="section-description">
-                Line plots showing how indicators evolved over 45 years by region.
+                Static line plots showing how indicators evolved over 45 years by region.
             </p>""" + "".join([f"""
             <div class="chart-container">
                 <img src="data:image/png;base64,{img}">
@@ -867,88 +961,67 @@ html_content = """
             """ for img in eda_trends]) + """
         </section>
         
-        <!-- EDA SECTION: CORRELATION -->
-        <section id="eda-corr" class="section">
-            <h2 class="section-title">Correlation Analysis</h2>
-            <p class="section-description">
-                Heatmap showing correlations between all gender education indicators.
-            </p>
-            <div class="chart-container">
-                <img src="data:image/png;base64,""" + eda_correlation + """">
-            </div>
-        </section>
-        
-        <!-- EDA SECTION: GENDER PARITY -->
+        <!-- GENDER PARITY (STATIC) -->
         """ + (f"""
-        <section id="eda-parity" class="section">
-            <h2 class="section-title">Gender Parity Analysis</h2>
+        <section id="add-regional-parity" class="section">
+            <h2 class="section-title">Gender Parity Analysis (Static)</h2>
             <p class="section-description">
                 Regional and temporal analysis of Gender Parity Index (F/M literacy ratio).
             </p>
             <div class="chart-container">
-                <img src="data:image/png;base64,{eda_parity}">
+                <img src="data:image/png;base64,{eda_parity_regional}">
             </div>
-        </section>
-        """ if eda_parity else "") + """
-        
-        <!-- PLOTLY INTERACTIVE SECTIONS -->
-        <section id="plotly-trends" class="section">
-            <h2 class="section-title">Regional Literacy Trends</h2>
-            <p class="section-description">
-                Interactive visualization of female literacy rates across world regions from 1980 to 2024.
-            </p>
             <div class="chart-container">
-                """ + plotly_chart1 + """
+                <img src="data:image/png;base64,{eda_parity_temporal}">
             </div>
         </section>
+        """ if eda_parity_regional and eda_parity_temporal else "") + """
         
-        <section id="plotly-map" class="section">
-            <h2 class="section-title">Global Female Literacy Evolution</h2>
-            <p class="section-description">
-                Animated choropleth map showing worldwide changes in female literacy rates over time.
-            </p>
-            <div class="chart-container">
-                """ + plotly_chart2 + """
-            </div>
-        </section>
-        
-        <section id="plotly-scatter" class="section">
-            <h2 class="section-title">Literacy vs. Labor Force Participation</h2>
-            <p class="section-description">
-                Relationship between female literacy and labor force participation rates across countries.
-            </p>
-            <div class="chart-container">
-                """ + plotly_chart3 + """
-            </div>
-        </section>
-        
-        <section id="plotly-dashboard" class="section">
+        <!-- REGIONAL DASHBOARD -->
+        <section id="add-dashboard" class="section">
             <h2 class="section-title">Regional Comparison Dashboard</h2>
             <p class="section-description">
-                Multi-panel comparison of key indicators across all world regions.
+                Multi-panel comparison of key indicators across all world regions. Hover over bars for exact values.
             </p>
             <div class="chart-container">
-                """ + plotly_chart4 + """
+                """ + plotly_chart_dashboard + """
             </div>
         </section>
         
-        <section id="plotly-bubble" class="section">
-            <h2 class="section-title">Multi-Dimensional Evolution</h2>
+        <!-- MULTI-DIMENSIONAL EVOLUTION -->
+        <section id="add-bubble" class="section">
+            <h2 class="section-title">Multi-Dimensional Evolution (Education & Employment)</h2>
             <p class="section-description">
-                Animated bubble chart showing countries evolving across literacy, labor force, and fertility dimensions.
+                Animated bubble chart showing how countries evolved across literacy, labor force, and fertility dimensions over time (1980-2024). 
+                <strong>Click play</strong> to see the evolution. This differs from the scatter plot above by showing the <strong>animated progression over 45 years</strong> 
+                rather than a single snapshot.
             </p>
             <div class="chart-container">
-                """ + plotly_chart5 + """
+                """ + plotly_chart_bubble + """
             </div>
         </section>
         
-        <section id="plotly-parity" class="section">
-            <h2 class="section-title">Gender Parity Index Analysis</h2>
+        <!-- PARALLEL COORDINATES -->
+        <section id="add-parallel" class="section">
+            <h2 class="section-title">Multi-Dimensional Analysis</h2>
             <p class="section-description">
-                Distribution of Gender Parity Index by region (1.0 = perfect equality).
+                Parallel coordinates plot showing relationships across all indicators simultaneously. 
+                <strong>Drag on any axis to filter data ranges</strong> and explore patterns. Each line represents one country, 
+                colored by female literacy rate (red=low, green=high).
             </p>
             <div class="chart-container">
-                """ + plotly_chart6 + """
+                """ + plotly_chart_parallel + """
+            </div>
+        </section>
+        
+        <!-- SUNBURST CHART -->
+        <section id="add-sunburst" class="section">
+            <h2 class="section-title">Hierarchical Literacy Analysis</h2>
+            <p class="section-description">
+                Sunburst chart showing literacy rates organized by region and country. Click segments to zoom in/out.
+            </p>
+            <div class="chart-container">
+                """ + plotly_chart_sunburst + """
             </div>
         </section>
         
